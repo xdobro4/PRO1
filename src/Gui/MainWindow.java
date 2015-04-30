@@ -40,18 +40,39 @@ public class MainWindow extends JFrame {
 
     private void initWindow() {
         this.printItems(); // @todo
-//        JTextArea textArea = new JTextArea(25, 80);
-//        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
-        JPanel pnlCenter = new JPanel(new BorderLayout());
-//        pnlCenter.add(new JScrollPane(textArea), BorderLayout.CENTER);
-        pnlCenter.add(addCreatePanel(), BorderLayout.NORTH);
+        // items
+        JPanel pnlItems = createPanelItems();
+        add(pnlItems, BorderLayout.CENTER);
 
-        add(pnlCenter, BorderLayout.CENTER);
-
+        // toolbar
         add(createToolbar(), BorderLayout.NORTH);
 
         pack();
+    }
+
+    private JPanel createPanelItems() {
+        JPanel pnlItems = new JPanel(new BorderLayout());
+
+        // add panel
+        pnlItems.add(addCreatePanel(), BorderLayout.NORTH);
+
+        // list
+        pnlItems.add(createItemList(), BorderLayout.CENTER);
+
+        return pnlItems;
+    }
+
+    private JList createItemList() {
+        JList<Item> list = new JList<>(this.itemsManager.getList());
+
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list.setLayoutOrientation(JList.VERTICAL);
+        list.setVisibleRowCount(3);
+        JScrollPane listScroller = new JScrollPane(list);
+        listScroller.setPreferredSize(new Dimension(250, 80));
+
+        return list;
     }
 
     private JPanel addCreatePanel() {
@@ -111,9 +132,7 @@ public class MainWindow extends JFrame {
 
         if (name.isEmpty() || phone.isEmpty()) {
             final JPanel panel = new JPanel();
-
-            JOptionPane.showMessageDialog(panel, "A deprecated call", "Warning",
-                    JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(panel, "Pole jméno a telefonní číslo jsou povinná!", "Warning", JOptionPane.WARNING_MESSAGE);
 
             return;
         }

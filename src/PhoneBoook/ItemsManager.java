@@ -5,14 +5,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Vector;
 
 public class ItemsManager {
 
     public static final String SEPARATOR = ",";
 
-    private List<Item> list;
+    private Vector<Item> list;
 
     private String filePath;
 
@@ -20,12 +19,12 @@ public class ItemsManager {
         this.filePath = filePath;
     }
 
-    public List<Item> readCsv() {
+    public Vector<Item> readCsv() {
         BufferedReader br = null;
         String line;
         String cvsSplitBy = SEPARATOR;
 
-        this.list = new ArrayList<>();
+        this.list = new Vector<>();
 
         try {
             br = new BufferedReader(new FileReader(filePath));
@@ -72,7 +71,7 @@ public class ItemsManager {
         return true;
     }
 
-    public List<Item> getList() {
+    public Vector<Item> getList() {
         if (this.list == null) {
             this.readCsv();
         }
