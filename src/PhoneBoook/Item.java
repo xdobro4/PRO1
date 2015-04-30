@@ -32,6 +32,22 @@ public class Item {
         return description;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public String toString() {
         return this.getName() + ItemsManager.SEPARATOR + this.getAddress() + ItemsManager.SEPARATOR + this.getPhone() + ItemsManager.SEPARATOR + this.getDescription();

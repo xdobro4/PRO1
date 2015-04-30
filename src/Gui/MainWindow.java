@@ -4,6 +4,8 @@ import PhoneBoook.Item;
 import PhoneBoook.ItemsManager;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,6 +23,13 @@ public class MainWindow extends JFrame {
     private JTextField fieldPhone = new JTextField("123456789;123456789", 10);
     private JTextField fieldAddress = new JTextField(10);
     private JTextField fieldDescription = new JTextField(10);
+
+    // JList
+    private JList<Item> list;
+
+    // buttons
+    private JButton editButton;
+    private JButton deleteButton;
 
     public MainWindow() {
         setTitle("Evidence kontaktů");
@@ -60,15 +69,117 @@ public class MainWindow extends JFrame {
         // list
         pnlItems.add(createItemList(), BorderLayout.CENTER);
 
+
+        pnlItems.add(createListButtons(), BorderLayout.SOUTH);
         return pnlItems;
     }
 
-    private JList createItemList() {
-        JList<Item> list = new JList<>(this.itemsManager.getList());
+    private JPanel createListButtons() {
+        JPanel buttons = new JPanel(new BorderLayout());
+        buttons.add(createEditButton(), BorderLayout.SOUTH);
+        buttons.add(createDeleteButton(), BorderLayout.NORTH);
 
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list.setLayoutOrientation(JList.VERTICAL);
-        list.setVisibleRowCount(3);
+        return buttons;
+    }
+
+    private JButton createEditButton() {
+        this.editButton = new JButton("Editovat");
+        this.editButton.setVerticalTextPosition(AbstractButton.BOTTOM);
+        this.editButton.setHorizontalTextPosition(AbstractButton.CENTER);
+        this.editButton.setEnabled(false);
+        this.editButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleEdit(e);
+            }
+        });
+
+        return this.editButton;
+    }
+
+    private JButton createDeleteButton() {
+        this.deleteButton = new JButton("Smazat");
+        this.deleteButton.setVerticalTextPosition(AbstractButton.BOTTOM);
+        this.deleteButton.setHorizontalTextPosition(AbstractButton.CENTER);
+        this.deleteButton.setEnabled(false);
+        this.deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleDelete(e);
+            }
+        });
+
+        return this.deleteButton;
+    }
+
+    private void handleEdit(ActionEvent e) {
+        if (list.getSelectedIndex() == -1) {
+            return;
+        }
+
+        Item item = list.getSelectedValue();
+
+//        item.setName(fieldName.getText());
+//        item.setPhone(fieldPhone.getText());
+//        item.setAddress(fieldAddress.getText());
+//        item.setDescription(fieldDescription.getText());
+
+        fieldName.setText(item.getName());
+        fieldPhone.setText(item.getPhone());
+        fieldAddress.setText(item.getAddress());
+        fieldDescription.setText(item.getDescription());
+
+//        showMessage("Uloženo!");
+    }
+
+    private void handleDelete(ActionEvent e) {
+        if (this.list.getSelectedIndex() == -1) {
+            return;
+        }
+
+        int dialogResult = JOptionPane.showConfirmDialog(null, "Would You Like to Save your Previous Note First?", "Warning", JOptionPane.YES_NO_OPTION);
+        if (dialogResult == JOptionPane.NO_OPTION) {
+            return;
+        }
+
+        Integer indexVal = list.getSelectedIndex();
+        Item item = list.getSelectedValue();
+        this.itemsManager.remove(item);
+        this.showMessage("Odstraněno!");
+
+        if (this.list.getMaxSelectionIndex() == indexVal) {
+            this.deleteButton.setEnabled(false);
+        }
+    }
+
+    private void showMessage(String message) {
+        final JPanel panel = new JPanel();
+        JOptionPane.showMessageDialog(panel, message, "Warning", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private JList createItemList() {
+        this.list = new JList<>(this.itemsManager.getList());
+
+        this.list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.list.setLayoutOrientation(JList.VERTICAL);
+        this.list.setVisibleRowCount(3);
+        this.list.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+
+                    if (list.getSelectedIndex() == -1) {
+                        //No selection, disable fire button.
+                        editButton.setEnabled(false);
+                        deleteButton.setEnabled(false);
+                    } else {
+                        //Selection, enable the fire button.
+                        editButton.setEnabled(true);
+                        deleteButton.setEnabled(true);
+                    }
+                }
+            }
+        });
         JScrollPane listScroller = new JScrollPane(list);
         listScroller.setPreferredSize(new Dimension(250, 80));
 
@@ -131,8 +242,7 @@ public class MainWindow extends JFrame {
         System.out.println(description);
 
         if (name.isEmpty() || phone.isEmpty()) {
-            final JPanel panel = new JPanel();
-            JOptionPane.showMessageDialog(panel, "Pole jméno a telefonní číslo jsou povinná!", "Warning", JOptionPane.WARNING_MESSAGE);
+            this.showMessage("Pole jméno a telefonní číslo jsou povinná!");
 
             return;
         }
@@ -196,7 +306,7 @@ public class MainWindow extends JFrame {
     }
 
     public void printItems() {
-        for(Item item: this.itemsManager.getList()) {
+        for (Item item : this.itemsManager.getList()) {
             System.out.println(item.toString());
         }
     }
