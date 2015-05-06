@@ -6,23 +6,26 @@ import PhoneBoook.ItemsManager;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
+import java.io.File;
+import java.util.Vector;
 
 public class MainWindow extends JFrame {
 
-    public static final String ITEMS_PATH = System.getProperty("user.dir") + "/src/items.csv";
+    public static final String SEARCH_STRING = "Vyhledat";
 
-    private ItemsManager itemsManager = new ItemsManager(ITEMS_PATH);
+    private ItemsManager itemsManager = null;
+    private JPanel pnlItems = new JPanel(new BorderLayout());
 
     // form
-    private JTextField fieldName = new JTextField("Test", 10);
-    private JTextField fieldPhone = new JTextField("123456789;123456789", 10);
-    private JTextField fieldAddress = new JTextField(10);
-    private JTextField fieldDescription = new JTextField(10);
+    private JTextField fieldName = new JTextField("Ales", 10); // @todo
+    private JTextField fieldPhone = new JTextField("123456789", 10); // @todo
+    private JTextField fieldAddress = new JTextField("doma", 10); // @todo
+
+    // search
+    private JTextField search = new JTextField(SEARCH_STRING, 15);
 
     // JList
     private JList<Item> list;
@@ -30,52 +33,119 @@ public class MainWindow extends JFrame {
     // buttons
     private JButton editButton;
     private JButton deleteButton;
+    private JButton saveButton;
+    private JButton addButton;
 
+    // construct
     public MainWindow() {
+        JFileChooser fc = setupFileChooser();
+
+        File file = null;
+        Integer i = 0;
+        do {
+            Integer returnVal = fc.showOpenDialog(MainWindow.this);
+
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                file = fc.getSelectedFile();
+            } else {
+                showMessage("Nejprve je třeba vybrat CSV soubor!");
+            }
+
+        } while (++i < 2 && file == null); // pokud uzivatel nevybere soubor 2x program konci
+
+        if(file == null) {
+            showMessage("Nebyl zvolen žádný soubor!");
+            System.exit(0);
+            return;
+        }
+
+        this.itemsManager = new ItemsManager(file.getAbsoluteFile().toString());
+
         setTitle("Evidence kontaktů");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        initWindow();
+        // items
+        this.add(createPanel(), BorderLayout.CENTER);
+        // add panel
+        this.add(addCreatePanel(), BorderLayout.NORTH);
+
+        this.pack();
 
         this.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-
-                printItems(); // @todo
-
                 super.windowClosing(e);
             }
         });
     }
 
-    private void initWindow() {
-        this.printItems(); // @todo
-
-        // items
-        JPanel pnlItems = createPanelItems();
-        add(pnlItems, BorderLayout.CENTER);
-
-        // toolbar
-        add(createToolbar(), BorderLayout.NORTH);
-
-        pack();
-    }
-
-    private JPanel createPanelItems() {
-        JPanel pnlItems = new JPanel(new BorderLayout());
-
-        // add panel
-        pnlItems.add(addCreatePanel(), BorderLayout.NORTH);
-
+    // GUI
+    private JPanel createPanel() {
         // list
-        pnlItems.add(createItemList(), BorderLayout.CENTER);
+        pnlItems.add(createSortBar(), BorderLayout.NORTH);
 
+        pnlItems.add(createItemList(), BorderLayout.CENTER);
+        pnlItems.add(new JScrollPane(list));
 
         pnlItems.add(createListButtons(), BorderLayout.SOUTH);
+
         return pnlItems;
+    }
+
+    private JPanel createSortBar() {
+        JPanel panel = new JPanel();
+
+        JButton btPridat = new JButton("Řadit A-Z");
+        panel.add(btPridat);
+        btPridat.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                itemsManager.sort();
+                list.setListData(itemsManager.getVectorList());
+            }
+
+        });
+
+
+        JButton btVypsat = new JButton("Řadit Z-A");
+        panel.add(btVypsat);
+        btVypsat.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                itemsManager.sort(true);
+                list.setListData(itemsManager.getVectorList());
+            }
+        });
+
+        panel.add(search);
+        search.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleSearch();
+            }
+
+        });
+        search.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (search.getText().equals(SEARCH_STRING)) {
+                    search.setText("");
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (search.getText().equals("")) {
+                    search.setText(SEARCH_STRING);
+                }
+            }
+        });
+
+        return panel;
     }
 
     private JPanel createListButtons() {
         JPanel buttons = new JPanel(new BorderLayout());
+
         buttons.add(createEditButton(), BorderLayout.SOUTH);
         buttons.add(createDeleteButton(), BorderLayout.NORTH);
 
@@ -91,6 +161,7 @@ public class MainWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 handleEdit(e);
+                handleSearch();
             }
         });
 
@@ -106,55 +177,11 @@ public class MainWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 handleDelete(e);
+                handleSearch();
             }
         });
 
         return this.deleteButton;
-    }
-
-    private void handleEdit(ActionEvent e) {
-        if (list.getSelectedIndex() == -1) {
-            return;
-        }
-
-        Item item = list.getSelectedValue();
-
-//        item.setName(fieldName.getText());
-//        item.setPhone(fieldPhone.getText());
-//        item.setAddress(fieldAddress.getText());
-//        item.setDescription(fieldDescription.getText());
-
-        fieldName.setText(item.getName());
-        fieldPhone.setText(item.getPhone());
-        fieldAddress.setText(item.getAddress());
-        fieldDescription.setText(item.getDescription());
-
-//        showMessage("Uloženo!");
-    }
-
-    private void handleDelete(ActionEvent e) {
-        if (this.list.getSelectedIndex() == -1) {
-            return;
-        }
-
-        int dialogResult = JOptionPane.showConfirmDialog(null, "Would You Like to Save your Previous Note First?", "Warning", JOptionPane.YES_NO_OPTION);
-        if (dialogResult == JOptionPane.NO_OPTION) {
-            return;
-        }
-
-        Integer indexVal = list.getSelectedIndex();
-        Item item = list.getSelectedValue();
-        this.itemsManager.remove(item);
-        this.showMessage("Odstraněno!");
-
-        if (this.list.getMaxSelectionIndex() == indexVal) {
-            this.deleteButton.setEnabled(false);
-        }
-    }
-
-    private void showMessage(String message) {
-        final JPanel panel = new JPanel();
-        JOptionPane.showMessageDialog(panel, message, "Warning", JOptionPane.WARNING_MESSAGE);
     }
 
     private JList createItemList() {
@@ -162,11 +189,15 @@ public class MainWindow extends JFrame {
 
         this.list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.list.setLayoutOrientation(JList.VERTICAL);
-        this.list.setVisibleRowCount(3);
+        this.list.setVisibleRowCount(10);
         this.list.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
+                    if (saveButton.isVisible()) {
+                        switchAddEditButtons(false, true);
+                        emptyInputs();
+                    }
 
                     if (list.getSelectedIndex() == -1) {
                         //No selection, disable fire button.
@@ -180,16 +211,14 @@ public class MainWindow extends JFrame {
                 }
             }
         });
-        JScrollPane listScroller = new JScrollPane(list);
-        listScroller.setPreferredSize(new Dimension(250, 80));
 
         return list;
     }
 
-    private JPanel addCreatePanel() {
+    private JToolBar addCreatePanel() {
         JLabel l;
 
-        JPanel addPanel = new JPanel();
+        JToolBar addPanel = new JToolBar();
         addPanel.setBorder(BorderFactory.createTitledBorder("Detail kontaktu"));
 
         l = new JLabel("Jméno: ", JLabel.TRAILING);
@@ -197,7 +226,7 @@ public class MainWindow extends JFrame {
         l.setLabelFor(this.fieldName);
         addPanel.add(this.fieldName);
 
-        l = new JLabel("Telefonní čísla (oddělujte středníkem): ", JLabel.TRAILING);
+        l = new JLabel("Telefonní čísla: ", JLabel.TRAILING);
         addPanel.add(l);
         l.setLabelFor(this.fieldPhone);
         addPanel.add(this.fieldPhone);
@@ -207,108 +236,143 @@ public class MainWindow extends JFrame {
         l.setLabelFor(this.fieldAddress);
         addPanel.add(this.fieldAddress);
 
-        l = new JLabel("Poznámka: ", JLabel.TRAILING);
-        addPanel.add(l);
-        l.setLabelFor(this.fieldDescription);
-        addPanel.add(this.fieldDescription);
+        this.addButton = new JButton("Přidat");
+        this.addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleAdd(e);
+                handleSearch();
+            }
+        });
+        addPanel.add(this.addButton);
 
-        JButton addButton = new JButton("Přidat");
-        addButton.addActionListener(this.createAddListener());
-        addPanel.add(addButton);
+        this.saveButton = new JButton("Uložit");
+        this.saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleSave(e);
+                handleSearch();
+            }
+        });
+        this.saveButton.setVisible(false);
+        addPanel.add(this.saveButton);
 
         return addPanel;
     }
 
-    private ActionListener createAddListener() {
-        return new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MainWindow.this.handleAdd();
-            }
-        };
-    }
-
-    private void handleAdd() {
+    // ACTIONS
+    private void handleAdd(ActionEvent e) {
         String name = this.fieldName.getText();
-        System.out.println(name);
-
         String phone = this.fieldPhone.getText();
-        System.out.println(phone);
-
         String address = this.fieldAddress.getText();
-        System.out.println(address);
 
-        String description = this.fieldDescription.getText();
-        System.out.println(description);
-
-        if (name.isEmpty() || phone.isEmpty()) {
-            this.showMessage("Pole jméno a telefonní číslo jsou povinná!");
+        if (name.isEmpty() || phone.isEmpty() || address.isEmpty()) {
+            this.showMessage("Všechna pole jsou povinná!");
 
             return;
         }
 
-        Item item = new Item(name, address, phone, description);
+        Item item = new Item(name, address, phone);
         this.itemsManager.add(item);
+        this.itemsManager.flush();
+        this.list.setListData(itemsManager.getVectorList());
+    }
+
+    private void handleSave(ActionEvent e) {
+        if (this.list.getSelectedIndex() == -1) {
+            return;
+        }
+
+        Item item = this.list.getSelectedValue();
+        item.setName(this.fieldName.getText());
+        item.setPhone(this.fieldPhone.getText());
+        item.setAddress(this.fieldAddress.getText());
+
+        this.emptyInputs();
+
+        this.list.repaint();
+
+        switchAddEditButtons(false, true);
+
         this.itemsManager.flush();
     }
 
-    private JToolBar createToolbar() {
-        JToolBar tb = new JToolBar();
-
-//        JButton btPridat = new JButton("Pridat");
-//        tb.add(btPridat);
-//        btPridat.addActionListener(new ActionListener() {
-//
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-////                pridatListek();
-//            }
-//
-//        });
-//
-//        JButton btVypsat = new JButton("Vypsat");
-//        tb.add(btVypsat);
-//        btVypsat.addActionListener(new ActionListener() {
-//
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-////                vypsatListky();
-//            }
-//        });
-//
-//        JButton btUlozit = new JButton("Ulo�it");
-//        tb.add(btUlozit);
-//        btUlozit.addActionListener(new ActionListener() {
-//
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-////                ulozit();
-//            }
-//        });
-//
-//        JButton btNacist = new JButton("Na��st");
-//        tb.add(btNacist);
-//        btNacist.addActionListener(new ActionListener() {
-//
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-////                nacist();
-//            }
-//        });
-
-        return tb;
-    }
-
-    // DATA
-    public boolean writeItem() {
-        this.itemsManager.add(new Item("e", "c", "d", "b"));
-        return this.itemsManager.flush();
-    }
-
-    public void printItems() {
-        for (Item item : this.itemsManager.getList()) {
-            System.out.println(item.toString());
+    private void handleEdit(ActionEvent e) {
+        if (this.list.getSelectedIndex() == -1) {
+            return;
         }
+
+        Item item = this.list.getSelectedValue();
+        this.fieldName.setText(item.getName());
+        this.fieldPhone.setText(item.getPhone());
+        this.fieldAddress.setText(item.getAddress());
+
+        switchAddEditButtons(true, false);
+    }
+
+    private void handleDelete(ActionEvent e) {
+        if (this.list.getSelectedIndex() == -1) {
+            return;
+        }
+
+        int dialogResult = JOptionPane.showConfirmDialog(null, "Opravdu odstranit záznam?", "", JOptionPane.YES_NO_OPTION);
+        if (dialogResult == JOptionPane.NO_OPTION) {
+            return;
+        }
+
+        Item item = this.list.getSelectedValue();
+        this.itemsManager.remove(item);
+        this.itemsManager.flush();
+        this.list.repaint();
+        this.showMessage("Odstraněno!");
+
+        if (this.list.getSelectedIndex() >= this.list.getModel().getSize()) {
+            this.deleteButton.setEnabled(false);
+        }
+    }
+
+    private void handleSearch() {
+        if (search.getText().isEmpty() || search.getText().equals(SEARCH_STRING)) {
+            list.setListData(itemsManager.getVectorList());
+        } else {
+            Vector<Item> items = itemsManager.getVectorList();
+            for (Item item : itemsManager.getVectorList()) {
+                if (!item.toString().contains(search.getText())) {
+                    items.remove(item);
+                }
+            }
+            list.setListData(items);
+        }
+    }
+
+    // UTILS
+    private JFileChooser setupFileChooser() {
+        JFileChooser fc = new JFileChooser();
+        File workingDirectory = new File(System.getProperty("user.dir"));
+
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV soubor", "csv");
+        fc.setFileFilter(filter);
+
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fc.setCurrentDirectory(workingDirectory);
+
+        return fc;
+    }
+
+    private void showMessage(String message) {
+        final JPanel panel = new JPanel();
+        JOptionPane.showMessageDialog(panel, message, "Warning", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void emptyInputs() {
+        this.fieldName.setText("");
+        this.fieldPhone.setText("");
+        this.fieldAddress.setText("");
+    }
+
+    private void switchAddEditButtons(boolean save, boolean edit) {
+        saveButton.setVisible(save);
+        addButton.setVisible(edit);
     }
 
     // RUN
@@ -323,3 +387,4 @@ public class MainWindow extends JFrame {
     }
 
 }
+

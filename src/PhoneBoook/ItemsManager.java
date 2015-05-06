@@ -1,17 +1,19 @@
 package PhoneBoook;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import java.util.Collections;
 import java.util.Vector;
 
 public class ItemsManager {
 
     public static final String SEPARATOR = ",";
 
-    private Vector<Item> list;
+    private DefaultListModel<Item> list;
 
     private String filePath;
 
@@ -19,20 +21,20 @@ public class ItemsManager {
         this.filePath = filePath;
     }
 
-    public Vector<Item> readCsv() {
+    public DefaultListModel<Item> readCsv() {
         BufferedReader br = null;
         String line;
         String cvsSplitBy = SEPARATOR;
 
-        this.list = new Vector<>();
+        this.list = new DefaultListModel<>();
 
         try {
             br = new BufferedReader(new FileReader(filePath));
             while ((line = br.readLine()) != null) {
                 String[] item = line.split(cvsSplitBy);
 
-                if (item.length == 4)
-                    this.list.add(new Item(item[0], item[1], item[2], item[3]));
+                if (item.length == 3)
+                    this.list.addElement(new Item(item[0], item[1], item[2]));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -53,7 +55,7 @@ public class ItemsManager {
 
         try {
             FileWriter writer = new FileWriter(this.filePath);
-            for (Item item : this.getList()) {
+            for (Item item : this.getVectorList()) {
 
                 writer.append(item.toString());
                 writer.append("\n");
@@ -71,7 +73,7 @@ public class ItemsManager {
         return true;
     }
 
-    public Vector<Item> getList() {
+    public DefaultListModel<Item> getList() {
         if (this.list == null) {
             this.readCsv();
         }
@@ -80,14 +82,42 @@ public class ItemsManager {
     }
 
     public ItemsManager add(Item item) {
-        this.getList().add(item);
+        this.getList().addElement(item);
 
         return this;
     }
 
     public ItemsManager remove(Item item) {
-        this.getList().remove(item);
+        this.getList().removeElement(item);
 
         return this;
+    }
+
+    public void sort(boolean reverse) {
+        Vector<Item> list = this.getVectorList();
+        Collections.sort(list);
+
+        if (reverse) {
+            Collections.reverse(list);
+        }
+
+        this.list.removeAllElements();
+        for (Item item : list) {
+            this.list.addElement(item);
+        }
+    }
+
+    public void sort() {
+        this.sort(false);
+    }
+
+
+    public Vector<Item> getVectorList() {
+        Vector<Item> items = new Vector<>();
+        for (Object item : this.getList().toArray()) {
+            items.add((Item) item);
+        }
+
+        return items;
     }
 }

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="pro1" default="all">
+  
+  
+  <property file="pro1.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.bundle/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/RCS/**"/>
+    <exclude name="**/SCCS/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/rcs/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.war"/>
+    <include name="*.ear"/>
+    <include name="*.apk"/>
+    <include name="*.zip"/>
+    <include name="*.swc"/>
+    <include name="*.ane"/>
+    <include name="*.egg"/>
+    <include name="*.jar"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.7" value="${jdk.home.1.7}/bin"/>
+  <path id="jdk.classpath.1.7">
+    <fileset dir="${jdk.home.1.7}">
+      <include name="lib/ant-javafx.jar"/>
+      <include name="lib/dt.jar"/>
+      <include name="lib/javafx-doclet.jar"/>
+      <include name="lib/javafx-mx.jar"/>
+      <include name="lib/jconsole.jar"/>
+      <include name="lib/sa-jdi.jar"/>
+      <include name="lib/tools.jar"/>
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/htmlconverter.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/jfxrt.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.7}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.7}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.7"/>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <pathelement location="${javac2.home}/javac2.jar"/>
+    <pathelement location="${javac2.home}/jdom.jar"/>
+    <pathelement location="${javac2.home}/asm-all.jar"/>
+    <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  
+  <!-- Module PRO1 -->
+  
+  <dirname property="module.pro1.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.pro1" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.pro1" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.pro1" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.pro1" value="-encoding UTF-8 -source 1.7 ${compiler.args}"/>
+  
+  <property name="pro1.output.dir" value="${module.pro1.basedir}/out/production/PRO1"/>
+  <property name="pro1.testoutput.dir" value="${module.pro1.basedir}/out/test/PRO1"/>
+  
+  <path id="pro1.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="pro1.module.production.classpath">
+    <path refid="${module.jdk.classpath.pro1}"/>
+  </path>
+  
+  <path id="pro1.runtime.production.module.classpath">
+    <pathelement location="${pro1.output.dir}"/>
+  </path>
+  
+  <path id="pro1.module.classpath">
+    <path refid="${module.jdk.classpath.pro1}"/>
+    <pathelement location="${pro1.output.dir}"/>
+  </path>
+  
+  <path id="pro1.runtime.module.classpath">
+    <pathelement location="${pro1.testoutput.dir}"/>
+    <pathelement location="${pro1.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.pro1">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.pro1">
+    <patternset refid="excluded.from.module.pro1"/>
+  </patternset>
+  
+  <path id="pro1.module.sourcepath">
+    <dirset dir="${module.pro1.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.pro1" depends="compile.module.pro1.production,compile.module.pro1.tests" description="Compile module PRO1"/>
+  
+  <target name="compile.module.pro1.production" depends="register.custom.compilers" description="Compile module PRO1; production classes">
+    <mkdir dir="${pro1.output.dir}"/>
+    <javac2 destdir="${pro1.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.pro1}/javac">
+      <compilerarg line="${compiler.args.pro1}"/>
+      <bootclasspath refid="pro1.module.bootclasspath"/>
+      <classpath refid="pro1.module.production.classpath"/>
+      <src refid="pro1.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.pro1"/>
+    </javac2>
+    
+    <copy todir="${pro1.output.dir}">
+      <fileset dir="${module.pro1.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.pro1.tests" depends="register.custom.compilers,compile.module.pro1.production" description="compile module PRO1; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.pro1" description="cleanup module">
+    <delete dir="${pro1.output.dir}"/>
+    <delete dir="${pro1.testoutput.dir}"/>
+  </target>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.pro1" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.pro1" description="build all modules"/>
+  
+  <target name="init.artifacts">
+    <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.pro1:jar" value="${basedir}/out/artifacts/PRO1_jar"/>
+    <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.PRO1.jar" value="${artifacts.temp.dir}/PRO1.jar"/>
+  </target>
+  
+  <target name="artifact.pro1:jar" depends="init.artifacts, compile.module.pro1" description="Build &#39;PRO1:jar&#39; artifact">
+    <property name="artifact.temp.output.pro1:jar" value="${artifacts.temp.dir}/PRO1_jar"/>
+    <mkdir dir="${artifact.temp.output.pro1:jar}"/>
+    <jar destfile="${temp.jar.path.PRO1.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${pro1.output.dir}"/>
+    </jar>
+    <copy file="${temp.jar.path.PRO1.jar}" tofile="${artifact.temp.output.pro1:jar}/PRO1.jar"/>
+  </target>
+  
+  <target name="build.all.artifacts" depends="artifact.pro1:jar" description="Build all artifacts">
+    <mkdir dir="${artifact.output.pro1:jar}"/>
+    <copy todir="${artifact.output.pro1:jar}">
+      <fileset dir="${artifact.temp.output.pro1:jar}"/>
+    </copy>
+    
+    <!-- Delete temporary files -->
+    <delete dir="${artifacts.temp.dir}"/>
+  </target>
+  
+  <target name="all" depends="build.modules, build.all.artifacts" description="build all"/>
+</project>
