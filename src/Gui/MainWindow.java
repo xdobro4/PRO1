@@ -194,16 +194,16 @@ public class MainWindow extends JFrame {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    if (saveButton.isVisible()) {
-                        switchAddEditButtons(false, true);
-                        emptyInputs();
-                    }
-
                     if (list.getSelectedIndex() == -1) {
                         //No selection, disable fire button.
                         editButton.setEnabled(false);
                         deleteButton.setEnabled(false);
                     } else {
+                        if (saveButton.isVisible()) {
+                            switchAddEditButtons(false, true);
+                            emptyInputs();
+                        }
+
                         //Selection, enable the fire button.
                         editButton.setEnabled(true);
                         deleteButton.setEnabled(true);
@@ -290,6 +290,7 @@ public class MainWindow extends JFrame {
 
         this.emptyInputs();
 
+        this.itemsManager.flush();
         this.list.repaint();
 
         switchAddEditButtons(false, true);
@@ -299,6 +300,7 @@ public class MainWindow extends JFrame {
 
     private void handleEdit(ActionEvent e) {
         if (this.list.getSelectedIndex() == -1) {
+            showMessage("b select");
             return;
         }
 
