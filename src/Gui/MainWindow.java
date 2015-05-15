@@ -53,7 +53,7 @@ public class MainWindow extends JFrame {
 
         } while (++i < 2 && file == null); // pokud uzivatel nevybere soubor 2x program konci
 
-        if(file == null) {
+        if (file == null) {
             showMessage("Nebyl zvolen žádný soubor!");
             System.exit(0);
             return;
@@ -101,6 +101,7 @@ public class MainWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 itemsManager.sort();
                 list.setListData(itemsManager.getVectorList());
+                handleSearch();
             }
 
         });
@@ -113,13 +114,22 @@ public class MainWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 itemsManager.sort(true);
                 list.setListData(itemsManager.getVectorList());
+                handleSearch();
             }
         });
 
         panel.add(search);
-        search.addActionListener(new ActionListener() {
+        search.addKeyListener(new KeyListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
                 handleSearch();
             }
 
@@ -135,7 +145,7 @@ public class MainWindow extends JFrame {
             @Override
             public void mouseExited(MouseEvent e) {
                 if (search.getText().equals("")) {
-                    search.setText(SEARCH_STRING);
+                    clearSearch();
                 }
             }
         });
@@ -161,7 +171,6 @@ public class MainWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 handleEdit(e);
-                handleSearch();
             }
         });
 
@@ -241,7 +250,7 @@ public class MainWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 handleAdd(e);
-                handleSearch();
+                clearSearch();
             }
         });
         addPanel.add(this.addButton);
@@ -258,6 +267,10 @@ public class MainWindow extends JFrame {
         addPanel.add(this.saveButton);
 
         return addPanel;
+    }
+
+    private void clearSearch() {
+        this.search.setText(SEARCH_STRING);
     }
 
     // ACTIONS
@@ -300,7 +313,6 @@ public class MainWindow extends JFrame {
 
     private void handleEdit(ActionEvent e) {
         if (this.list.getSelectedIndex() == -1) {
-            showMessage("b select");
             return;
         }
 
